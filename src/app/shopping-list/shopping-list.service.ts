@@ -12,9 +12,13 @@ export class ShoppingListService {
     ];
 
     //Return the copy of the original ingredients array (objects and arrays are reference types)
-    //Need to infrom Angular with an event that a new data is available for the original array, otherwise only working with the copy array
+    //Need to infrom Angular with an event that new data is available for the original array, but we are only using the copy of the original array
     getIngredients() {
         return this.ingredients.slice();
+    }
+
+    getIngredient(index: number) {
+        return this.ingredients[index];
     }
 
     addIngredient(ingredient: Ingredient) {
@@ -31,6 +35,16 @@ export class ShoppingListService {
         //using the spread operator: turn an array of elements into a list of elements
         //a list of single ingredeint elements will be pushed into the ingredeints array (not an array into the array)
         this.ingredients.push(...ingredients);
+        this.ingredientsChanged.next(this.ingredients.slice());
+    }
+
+    updateIngredient(index: number, newIngredient: Ingredient) {
+        this.ingredients[index] = newIngredient;
+        this.ingredientsChanged.next(this.ingredients.slice());
+    }
+
+    deleteIngredient(index: number) {
+        this.ingredients.splice(index, 1);
         this.ingredientsChanged.next(this.ingredients.slice());
     }
 }
