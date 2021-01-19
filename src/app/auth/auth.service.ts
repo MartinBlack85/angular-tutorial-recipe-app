@@ -22,7 +22,7 @@ export class AuthService {
     // only returns an observable, need to subscribe in that component where we need the return response from the http request
     // post<AuthResponseData> we define the response data from the http post request
     signUp(email: string, password: string) {
-        return this.http.post<AuthResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyCGeB_nbqGRKwNW5-P11a7J94rj4CehLiA', 
+        return this.http.post<AuthResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=[API_KEY]', 
         {
             email: email,
             password: password,
