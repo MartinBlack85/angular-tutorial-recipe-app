@@ -1,20 +1,25 @@
-import { Component } from "@angular/core";
+import { Component, ComponentFactoryResolver, OnDestroy, ViewChild } from "@angular/core";
 import { NgForm } from "@angular/forms";
 import { Router } from "@angular/router";
-import { Observable } from "rxjs";
+import { Observable, Subscription } from "rxjs";
 
 import { AuthService, AuthResponseData } from "./auth.service";
+import { AlertComponent } from '../shared/alert/alert.component';
+import { PlaceholderDirective } from "../shared/placeholder/placeholder.directive";
 
 @Component({
     selector: 'app-auth',
     templateUrl: './auth.component.html'
 })
-export class AuthComponent {
+export class AuthComponent implements OnDestroy {
     isLoggedIn = true;
     isLoading = false;
-    error: string = null;
+    error: string = null;   // not used for the programmatic error message alert solution
+    // ViewChild will find the first occurance of the PlaceholderDirective
+    @ViewChild(PlaceholderDirective, {static: false}) alertHost: PlaceholderDirective;
+    private closeSubscription: Subscription;
 
-    constructor(private authService: AuthService, private router: Router) {}
+    constructor(private authService: AuthService, private router: Router, private componentFactoryResolver: ComponentFactoryResolver) {}
 
     onSwitchMode() {
         this.isLoggedIn = !this.isLoggedIn;
@@ -49,10 +54,47 @@ export class AuthComponent {
             errorMessage => {
                 console.log(errorMessage);
                 this.error = errorMessage;
+                this.showErrorAlert(errorMessage);
                 this.isLoading = false;
         });
 
-
         form.reset();
+    }
+
+    onHandleError() {
+        this.error = null;
+    }
+
+    ngOnDestroy() {
+        if(this.closeSubscription) {
+            this.closeSubscription.unsubscribe();
+        }
+    }
+
+    //creating error message alert programatically
+    private showErrorAlert(message: string) {
+
+        //  cannot create a component like this: 
+        // const alertComponent = new AlertComponent();
+        // instead let Angular to create component - need to use component factory:
+        // only need to pass the type: AlertComponent for the parameter
+        const alertComponentFactory = this.componentFactoryResolver.resolveComponentFactory(AlertComponent);
+
+        // ViewvContainerRef allows to interact that exact part of the DOM where it points
+        const hostViewContainerRef = this.alertHost.viewContainerRef;
+
+        // Clears all previously rendered content in the DOM rendered by the ViewvContainerRef
+        hostViewContainerRef.clear();
+
+        //using the componentFactory to create a new alert message component in the DOM based on the ViewContainerRef
+        const componentReference = hostViewContainerRef.createComponent(alertComponentFactory);
+
+        // using the component reference for data and event binding
+        // instance have reference to the alert component class's properties
+        componentReference.instance.message = message;
+        this.closeSubscription = componentReference.instance.close.subscribe(() => {
+            this.closeSubscription.unsubscribe();
+            hostViewContainerRef.clear();
+        });
     }
 }

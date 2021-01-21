@@ -1,32 +1,31 @@
-import { NgModule } from "@angular/core";
-import { RouterModule, Routes } from "@angular/router";
-import { AuthComponent } from "./auth/auth.component";
-import { AuthGuard } from "./auth/auth.guard";
+import { NgModule } from '@angular/core';
+import { Routes, RouterModule, PreloadAllModules } from '@angular/router';
 
-import { RecipeDetailComponent } from "./recipes/recipe-detail/recipe-detail.component";
-import { RecipeEditComponent } from "./recipes/recipe-edit/recipe-edit.component";
-import { RecipeStartComponent } from "./recipes/recipe-start/recipe-start.component";
-import { RecipesResolverService } from "./recipes/recipes-resolver.service";
-import { RecipesComponent } from "./recipes/recipes.component";
-import { ShoppingListComponent } from "./shopping-list/shopping-list.component";
 
-// CanActivate's guard method will guard the recipe route
+// Lasy-loading: loadChildren: a special property in route config: the related modules will only be loaded if the user visits the related route
+// loadChildren: old syntax: contains file path to the related module and the attached classname of the module: './file/file/module#ModulClassName'
+// loadChildren: new syntax: () => import('file path of the module').then(module =y module.moduleClassName)
+// all the related codes will be in a different code bundle and will be loaded based on the visited route
 const appRoutes: Routes = [
-    { path: '', redirectTo: '/auth', pathMatch: 'full' },
-    { path: 'recipes', component: RecipesComponent, canActivate:[AuthGuard], children: [
-        { path: '',  component: RecipeStartComponent },
-        { path: 'new', component: RecipeEditComponent },
-        { path: ':id', component: RecipeDetailComponent, resolve: [RecipesResolverService] },
-        { path: ':id/edit', component: RecipeEditComponent, resolve: [RecipesResolverService] }
-    ] },
-    { path: 'shopping-list', component: ShoppingListComponent },
-    { path: 'auth', component: AuthComponent }
+  { path: '', redirectTo: '/recipes', pathMatch: 'full' },
+  { 
+    path: 'recipes', 
+    loadChildren: () => import('./recipes/recipes.module').then(module => module.RecipesModule)
+  },
+  {
+    path: 'shopping-list',
+    loadChildren: () => import('./shopping-list/shopping-list.module').then(module => module.ShoppingListModule)
+  },
+  {
+    path: 'auth',
+    loadChildren: () => import('./auth/auth.module').then(module => module.AuthModule)
+  }
 ];
 
+// configure the preloading of lazy-loading by using the forRoot {preloadingStrategy: }
+// we get fast initial pre load and fast subsequent loads for the subsequently loaded modules
 @NgModule({
-    imports: [RouterModule.forRoot(appRoutes)],
-    exports: [RouterModule]
+  imports: [RouterModule.forRoot(appRoutes, {preloadingStrategy: PreloadAllModules})],
+  exports: [RouterModule]
 })
-export class AppRoutingModule {
-
-}
+export class AppRoutingModule {}
