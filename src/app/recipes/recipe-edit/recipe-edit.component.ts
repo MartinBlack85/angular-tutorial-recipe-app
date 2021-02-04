@@ -14,6 +14,13 @@ export class RecipeEditComponent implements OnInit {
   editMode = false;
   recipeForm: FormGroup;
 
+  //Create a getter for the FormArray in the template
+  get controls() {
+    return (<FormArray>this.recipeForm.get('ingredients')).controls;
+    // return (this.recipeForm.get('ingredients') as FormArray).controls;
+    // *ngFor="let ingredientCtrl of controls; let i = index"
+  }
+
   constructor(private route: ActivatedRoute, private recipeService: RecipeService, private router: Router) { }
 
   ngOnInit() {
@@ -58,13 +65,6 @@ export class RecipeEditComponent implements OnInit {
       })
     )
   }
-
-  //Create a getter for the FormArray in the template
-  get controls() {
-    return (<FormArray>this.recipeForm.get('ingredients')).controls;
-    // *ngFor="let ingredientCtrl of controls; let i = index"
-  }
-  
 
   //method to initiallize the form
   private initForm() {
