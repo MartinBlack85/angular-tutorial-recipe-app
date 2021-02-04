@@ -11,6 +11,7 @@ import { DataStorageService } from "../shared/data-storage.service";
 export class HeaderComponent implements OnInit, OnDestroy {
     isAuthenticated = false;
     private userSubscription: Subscription;
+    collapsed = true;
 
     constructor(private dataStorageService: DataStorageService, private authService: AuthService) {}
 
