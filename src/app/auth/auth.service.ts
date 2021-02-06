@@ -3,6 +3,7 @@ import { Injectable } from "@angular/core";
 import { catchError, tap } from "rxjs/operators";
 import { BehaviorSubject, throwError } from "rxjs";
 import { Router } from "@angular/router";
+import { environment } from "../../environments/environment";
 
 import { User } from "./user.model";
 
@@ -36,7 +37,7 @@ export class AuthService {
     // only returns an observable, need to subscribe in that component where we need the return response from the http request
     // post<AuthResponseData> we define the response data from the http post request
     signUp(email: string, password: string) {
-        return this.http.post<AuthResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=', 
+        return this.http.post<AuthResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + environment.firebaseAPIKey, 
         {
             email: email,
             password: password,
@@ -53,7 +54,7 @@ export class AuthService {
     // AuthresponseData has anoptional last value which will be returned for the sign in http request
     // This login method only returnes an observable, but we need to subscribe in the Auth component
     login(email: string, password: string) {
-        return this.http.post<AuthResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=',
+        return this.http.post<AuthResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + environment.firebaseAPIKey,
         {
             email: email,
             password: password,
