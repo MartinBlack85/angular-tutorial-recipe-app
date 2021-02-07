@@ -15,11 +15,6 @@ export interface State {
     editedIngredientIndex: number
 }
 
-// creating a central interface for multiple states
-export interface AppState {
-    shoppingList: State
-}
-
 // Need to setup an initial state here as JS object with the State interface instead of using the Ingredients in the shopping-list service
 const initialState: State = {
     ingredients: [ new Ingredient('Onions', 2), new Ingredient('Tomatoes', 3)],

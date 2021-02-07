@@ -3,9 +3,12 @@ import { Injectable } from "@angular/core";
 import { catchError, tap } from "rxjs/operators";
 import { BehaviorSubject, throwError } from "rxjs";
 import { Router } from "@angular/router";
-import { environment } from "../../environments/environment";
+import { Store } from "@ngrx/store";
 
 import { User } from "./user.model";
+import { environment } from "../../environments/environment";
+import * as fromAppStateStore from '../store/app.reducer';
+import * as AuthActions from './store/auth.actions';
 
 // creating an interface to define the return type of the http post requests for authentication:
 export interface AuthResponseData {
@@ -26,11 +29,11 @@ export class AuthService {
     //need to add the tap() operator in the pipe() - it allows to perform some action on response data without changing the response
     //new users will be created in the tap() operator's anonim function (see bellow)
     //without a persistent storage, the authentication token in the user object disappears with the object upon page reload
-    user = new BehaviorSubject<User>(null);
+    //user = new BehaviorSubject<User>(null);   -   ngrx replaces this service
     private tokenExpirationTimer: any;
     
 
-    constructor(private http: HttpClient, private router: Router) {}
+    constructor(private http: HttpClient, private router: Router, private store: Store<fromAppStateStore.AppState>) {}
 
     // in the url need to replace the [API_KEY] with the your own Firebase api key
     // need to attach a javascript object based on firebase api authentication requirements
@@ -71,6 +74,7 @@ export class AuthService {
     //rerieve the user data from the browser's local storage after a page reload
     //this method looks into the localStorage and looks for a snapshot in the storage
     //userData is stored in string format, need to turn it back onto an object literal
+    // using the store to dispatch reducer action
     autoLogin() {
         const userData: {
             email: string;
@@ -94,7 +98,17 @@ export class AuthService {
         // because token is a getter that checks validity, this check will only be true if it is a valid token (expirition time)
         if(loadedUser.token) {
             //emitting a new authenticated user object on an observable
-            this.user.next(loadedUser);
+            //this.user.next(loadedUser);
+
+            //dispatching the auth reducer action
+            this.store.dispatch(new AuthActions.Login({
+                email: loadedUser.email, 
+                userId: loadedUser.id, 
+                token: loadedUser.token, 
+                expirationDate: new Date(userData._tokenExpirationDate)
+                }
+            ));
+
             //calling autoLogout when a user object get's emitted and need to pass the calculated remaining token time
             //calculation: future date in miliseconds - current date in miliseconds = time difference of expiration
             const expirationDuration = new Date(userData._tokenExpirationDate).getTime() - new Date().getTime();
@@ -104,7 +118,11 @@ export class AuthService {
 
     logout() {
         //when user object becomes null the authenticated state changes and we get logout effect
-        this.user.next(null);
+        // this.user.next(null);
+
+        // dispatch the auth action
+        this.store.dispatch(new AuthActions.Logout());
+
         //redirect is needed to be implemented in the auth service, because other features will trigger it as well (not just in the header)
         this.router.navigate(['/auth']);
         localStorage.removeItem('userData');
@@ -124,14 +142,21 @@ export class AuthService {
     private handleAuthentication(email: string, userId: string, token: string, expiresIn: number) {
         //generating expiration date token object based on the token expiration time from Firebase:
         const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
-        const user = new User(
-            email, 
-            userId, 
-            token, 
-            expirationDate
-        );
+        
         //emitting the new user object on signin, login or token expiration
-        this.user.next(user);
+        //this.user.next(user); -  ngrx auth action replaces this service
+
+        const user = new User(email, userId, token, expirationDate);
+
+        //dispatch auth action
+        this.store.dispatch(new AuthActions.Login({
+            email: email, 
+            userId: userId, 
+            token: token, 
+            expirationDate: expirationDate
+            }
+        ));
+
         // calling autoLogout and passing an expiration timer value when a new user object get's emitted
         this.autoLogout(expiresIn * 1000);
 

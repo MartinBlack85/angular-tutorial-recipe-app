@@ -1,11 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { Observable, Subscription } from 'rxjs';
+import { Observable } from 'rxjs';
 import { LoggingService } from '../logging.service';
 
 import { Ingredient } from '../shared/ingredient.model';
-import * as fromShoppingListReducer from './store/shopping-list.reducer';
 import * as ShoppingListActions from './store/shopping-list.actions';
+import * as fromAppStateStore from '../store/app.reducer';
 
 @Component({
   selector: 'app-shopping-list',
@@ -20,7 +20,7 @@ export class ShoppingListComponent implements OnInit, OnDestroy {
   // The structure of the Store based on the identifier defined in the app module and on the new state(key-value) from the reducer function
   constructor( 
     private loggingService: LoggingService, 
-    private store: Store<fromShoppingListReducer.AppState>) { }
+    private store: Store<fromAppStateStore.AppState>) { }
 
   ngOnInit() {
     // select method selects a slice of the state from the store, this gives an Observable - needs the asnyc pipe in the template

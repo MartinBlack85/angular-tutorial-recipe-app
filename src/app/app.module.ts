@@ -8,7 +8,7 @@ import { HeaderComponent } from './header/header.component';
 import { AppRoutingModule } from './app-routing.module';
 import { SharedModule } from './shared/shared.module';
 import { CoreModule } from './core.module';
-import { shoppingListReducer } from './shopping-list/store/shopping-list.reducer';
+import * as fromAppStateStore from './store/app.reducer';
 
 // In the Ngrx's StoreModule.forRoot() need to define a map for the reducer functions in a jS object by using custom key-valu identifiers
 // This key-value identifier defines the structure of the Ngrx store
@@ -23,7 +23,7 @@ import { shoppingListReducer } from './shopping-list/store/shopping-list.reducer
     BrowserModule,
     HttpClientModule,
     AppRoutingModule,
-    StoreModule.forRoot({shoppingList: shoppingListReducer}),
+    StoreModule.forRoot(fromAppStateStore.appReducer),
     SharedModule,
     CoreModule
   ],

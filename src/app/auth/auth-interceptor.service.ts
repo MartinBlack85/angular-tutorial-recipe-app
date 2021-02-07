@@ -1,14 +1,16 @@
 import { HttpHandler, HttpInterceptor, HttpParams, HttpRequest } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { take, exhaustMap } from "rxjs/operators";
+import { Store } from "@ngrx/store";
+import { take, exhaustMap, map } from "rxjs/operators";
 
 import { AuthService } from "./auth.service";
+import * as fromAppStateStore from '../store/app.reducer';
 
 // Interceptor service to attach the authentication token for the user object 
 @Injectable()
 export class AuthInterceptorService implements HttpInterceptor {
 
-    constructor(private authService: AuthService) {}
+    constructor(private authService: AuthService, private store: Store<fromAppStateStore.AppState>) {}
 
     // various observable will be gathered and returned as one complex observable in the end
     // need to subscribe to the http get observable in that component where we want to use the incoming data, there we subscribe here
@@ -19,8 +21,11 @@ export class AuthInterceptorService implements HttpInterceptor {
     // the url needs a query parameter for Firebase token authentication using HttpParams
     //will return 1 observable
     intercept(req: HttpRequest<any>, next: HttpHandler) {
-        return this.authService.user.pipe(
-            take(1), 
+        return this.store.select('auth').pipe(
+            take(1),
+            map(authState => {
+                return authState.user;
+            }),
             exhaustMap(user => {
                 //if user object is null, we forward the original http request
                 if(!user) {
