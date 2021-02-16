@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import { Store } from '@ngrx/store';
 
-import { AuthService } from './auth/auth.service';
 import { LoggingService } from './logging.service';
+import * as fromAppStateStore from './store/app.reducer';
+import * as AuthActions from './auth/store/auth.actions';
 
 @Component({
   selector: 'app-root',
@@ -10,12 +12,12 @@ import { LoggingService } from './logging.service';
 })
 export class AppComponent implements OnInit {
   
-  constructor(private authService: AuthService, private loggingService: LoggingService) {}
+  constructor(private store: Store<fromAppStateStore.AppState>, private loggingService: LoggingService) {}
 
   // checking the reloaded user from the browser's userStorage after the page reloads, app.component gets initiated in the earliest stage
   // loggingService shows the services loading behavior
   ngOnInit() {
-    this.authService.autoLogin();
+    this.store.dispatch(new AuthActions.AutoLogin());
     this.loggingService.printLog('Hello from AppComponent ngOnInit');
   }
 
